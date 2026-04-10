@@ -414,6 +414,31 @@
         "description": "Text displayed when the host header is invalid",
         "context": "Visible in the settings view"
     },
+    "settingsAuthTitle": "Basic Authentication",
+    "@settingsAuthTitle": {
+        "description": "Text displayed as title for basic authentication settings",
+        "context": "Visible in the settings view"
+    },
+    "settingsAuthUsername": "Username",
+    "@settingsAuthUsername": {
+        "description": "Text displayed as label for username input",
+        "context": "Visible in the settings view"
+    },
+    "settingsAuthPassword": "Password",
+    "@settingsAuthPassword": {
+        "description": "Text displayed as label for password input",
+        "context": "Visible in the settings view"
+    },
+    "tooltipSetAuth": "Set authentication credentials",
+    "@tooltipSetAuth": {
+        "description": "Tooltip for set authentication button",
+        "context": "Visible in settings view"
+    },
+    "settingsAuthHeaderTitle": "Configure Basic Auth",
+    "@settingsAuthHeaderTitle": {
+        "description": "Title of the basic auth configuration dialog",
+        "context": "Visible in the settings view"
+    },
     "settingsHostInvalidDetailed": "{type, select, url{The URL you entered is invalid. It isn't an a standardized URL format.} other{The host you entered is invalid. It cannot be reached. Please check the host and try again.}}",
     "@settingsHostInvalidDetailed": {
         "description": "Text displayed when the host is invalid",

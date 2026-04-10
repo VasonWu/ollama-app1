@@ -387,6 +387,130 @@ class _ScreenSettingsState extends State<ScreenSettings> {
     selectionHaptic();
   }
 
+  void configureBasicAuth() async {
+    selectionHaptic();
+
+    // 从现有 headers 中提取当前的用户名和密码（如果有的话）
+    final headersJson = prefs!.getString("hostHeaders") ?? "{}";
+    final headers = jsonDecode(headersJson) as Map;
+    String currentUsername = "";
+    String currentPassword = "";
+
+    if (headers.containsKey("Authorization")) {
+      final authHeader = headers["Authorization"] as String;
+      if (authHeader.startsWith("Basic ")) {
+        try {
+          final encoded = authHeader.substring(6);
+          final decoded = utf8.decode(base64Decode(encoded));
+          final parts = decoded.split(":");
+          if (parts.length >= 2) {
+            currentUsername = parts[0];
+            currentPassword = parts.sublist(1).join(":");
+          }
+        } catch (_) {
+          // 如果解析失败，忽略错误
+        }
+      }
+    }
+
+    final usernameController = TextEditingController(text: currentUsername);
+    final passwordController = TextEditingController(text: currentPassword);
+
+    if (!mounted) return;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setLocalState) {
+          void submit() {
+            selectionHaptic();
+
+            final username = usernameController.text.trim();
+            final password = passwordController.text.trim();
+
+            // 更新 headers
+            final headersJson = prefs!.getString("hostHeaders") ?? "{}";
+            final headers = jsonDecode(headersJson) as Map;
+
+            if (username.isEmpty || password.isEmpty) {
+              // 移除 Authorization 头
+              headers.remove("Authorization");
+            } else {
+              // 添加/更新 Authorization 头
+              final credentials = "$username:$password";
+              final encoded = base64Encode(utf8.encode(credentials));
+              headers["Authorization"] = "Basic $encoded";
+            }
+
+            prefs!.setString("hostHeaders", jsonEncode(headers));
+            Navigator.of(context).pop();
+          }
+
+          return PopScope(
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: desktopFeature(web: true)
+                    ? 12
+                    : MediaQuery.of(context).viewInsets.bottom,
+              ),
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.settingsAuthHeaderTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: usernameController,
+                    autofocus: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const [AutofillHints.username],
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.settingsAuthUsername,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person_rounded),
+                    ),
+                    onSubmitted: (_) => submit(),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const [AutofillHints.password],
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.settingsAuthPassword,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock_rounded),
+                      suffixIcon: IconButton(
+                        enableFeedback: false,
+                        tooltip: AppLocalizations.of(context)!.tooltipSave,
+                        onPressed: submit,
+                        icon: const Icon(Icons.save_rounded),
+                      ),
+                    ),
+                    onSubmitted: (_) => submit(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
   double iconSize = 1;
   bool animatedInitialized = false;
   bool animatedDesktop = false;
@@ -593,7 +717,15 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                                         fontFamily:
                                                             "monospace"))
                                               ],
-                                            ))))
+                                            )))),
+                          const SizedBox(height: 12),
+                          button(
+                            AppLocalizations.of(context)!.settingsAuthTitle,
+                            Icons.key_rounded,
+                            configureBasicAuth,
+                            context: context,
+                            iconAfterwards: true,
+                          ),
                         ]);
                         var column2 =
                             Column(mainAxisSize: MainAxisSize.min, children: [
