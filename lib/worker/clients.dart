@@ -23,10 +23,14 @@ class AuthHttpClient extends http.BaseClient {
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     // 在每个请求中添加 hostHeaders
     if (prefs != null) {
-      final headersJson = prefs!.getString("hostHeaders") ?? "{}";
-      final headers = jsonDecode(headersJson) as Map;
-      final castedHeaders = headers.cast<String, String>();
-      request.headers.addAll(castedHeaders);
+      try {
+        final headersJson = prefs!.getString("hostHeaders") ?? "{}";
+        final headers = jsonDecode(headersJson) as Map;
+        final castedHeaders = headers.cast<String, String>();
+        request.headers.addAll(castedHeaders);
+      } catch (_) {
+        // 如果解析失败，忽略错误
+      }
     }
     return _inner.send(request);
   }
@@ -35,5 +39,9 @@ class AuthHttpClient extends http.BaseClient {
 final httpClient = http.Client();
 final authHttpClient = AuthHttpClient(httpClient);
 llama.OllamaClient get ollamaClient => llama.OllamaClient(
+    headers: prefs != null
+        ? (jsonDecode(prefs!.getString("hostHeaders") ?? "{}") as Map)
+            .cast<String, String>()
+        : <String, String>{},
     baseUrl: "$host/api",
     client: authHttpClient);
