@@ -14,9 +14,26 @@ class OllamaHttpOverrides extends HttpOverrides {
   }
 }
 
+class AuthHttpClient extends http.BaseClient {
+  final http.Client _inner;
+
+  AuthHttpClient(this._inner);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    // 在每个请求中添加 hostHeaders
+    if (prefs != null) {
+      final headersJson = prefs!.getString("hostHeaders") ?? "{}";
+      final headers = jsonDecode(headersJson) as Map;
+      final castedHeaders = headers.cast<String, String>();
+      request.headers.addAll(castedHeaders);
+    }
+    return _inner.send(request);
+  }
+}
+
 final httpClient = http.Client();
+final authHttpClient = AuthHttpClient(httpClient);
 llama.OllamaClient get ollamaClient => llama.OllamaClient(
-    headers: (jsonDecode(prefs!.getString("hostHeaders") ?? "{}") as Map)
-        .cast<String, String>(),
     baseUrl: "$host/api",
-    client: httpClient);
+    client: authHttpClient);
