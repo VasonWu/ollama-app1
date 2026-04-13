@@ -60,25 +60,52 @@ jobs:
         with:
           distribution: "adopt"
           java-version: "17"
+      - name: Check if keystore exists
+        id: check_keystore
+        run: |
+          if [ -z "${{ secrets.ANDROID_KEYSTORE }}" ]; then
+            echo "keystore_exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "keystore_exists=true" >> $GITHUB_OUTPUT
+          fi
       - name: Copy keystore file
+        if: steps.check_keystore.outputs.keystore_exists == 'true'
         run: |
           echo $'storePassword=${{ secrets.ANDROID_KEYSTORE_PASSPHRASE }}\nkeyPassword=${{ secrets.ANDROID_KEYSTORE_PASSPHRASE }}\nkeyAlias=upload\nstoreFile=upload-keystore.jks\n' > ./android/key.properties
           echo "${{ secrets.ANDROID_KEYSTORE }}" > ./android/app/upload-keystore.jks.asc
           gpg -d --passphrase "${{ secrets.ANDROID_KEYSTORE_PASSPHRASE }}" --batch ./android/app/upload-keystore.jks.asc > ./android/app/upload-keystore.jks
       - name: Disabling flutter analytics
         run: flutter config --no-analytics
-      - name: Running build
-        id: compile
+      - name: Running build (release)
+        id: compile_release
+        if: steps.check_keystore.outputs.keystore_exists == 'true'
         run: flutter build apk --split-debug-info=build/debugAndroid ${{ github.event.inputs.obfuscate == 'true' && '--obfuscate' || '' }}
-      - name: Preparing files
+      - name: Running build (debug)
+        id: compile_debug
+        if: steps.check_keystore.outputs.keystore_exists != 'true'
+        run: flutter build apk --debug --split-debug-info=build/debugAndroid ${{ github.event.inputs.obfuscate == 'true' && '--obfuscate' || '' }}
+      - name: Preparing files (release)
+        if: steps.check_keystore.outputs.keystore_exists == 'true'
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/ollama-android-v${{ needs.analyze.outputs.result }}.apk
-      - name: Uploading APK
+      - name: Preparing files (debug)
+        if: steps.check_keystore.outputs.keystore_exists != 'true'
+        run: |
+          cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/ollama-android-v${{ needs.analyze.outputs.result }}-debug.apk
+      - name: Uploading APK (release)
         uses: actions/upload-artifact@v4
+        if: steps.check_keystore.outputs.keystore_exists == 'true'
         with:
           name: ollama-android
           path: |
             build/app/outputs/flutter-apk/ollama-android-v${{ needs.analyze.outputs.result }}.apk
+      - name: Uploading APK (debug)
+        uses: actions/upload-artifact@v4
+        if: steps.check_keystore.outputs.keystore_exists != 'true'
+        with:
+          name: ollama-android-debug
+          path: |
+            build/app/outputs/flutter-apk/ollama-android-v${{ needs.analyze.outputs.result }}-debug.apk
   build-windows-x64:
     name: Building for Windows x64
     if: ${{ github.event.inputs.buildWindowsX64 == 'true' }}
