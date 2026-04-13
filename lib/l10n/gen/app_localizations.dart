@@ -577,6 +577,36 @@ abstract class AppLocalizations {
   /// **'{type, select, url{The URL you entered is invalid. It isn\'t an a standardized URL format.} other{The host you entered is invalid. It cannot be reached. Please check the host and try again.}}'**
   String settingsHostInvalidDetailed(String type);
 
+  /// Text displayed as title for basic authentication settings
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Authentication'**
+  String get settingsAuthTitle;
+
+  /// Text displayed as label for username input
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get settingsAuthUsername;
+
+  /// Text displayed as label for password input
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get settingsAuthPassword;
+
+  /// Tooltip for set authentication button
+  ///
+  /// In en, this message translates to:
+  /// **'Set authentication credentials'**
+  String get tooltipSetAuth;
+
+  /// Title of the basic auth configuration dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Basic Auth'**
+  String get settingsAuthHeaderTitle;
+
   /// Text displayed as description for system message input
   ///
   /// In en, this message translates to:

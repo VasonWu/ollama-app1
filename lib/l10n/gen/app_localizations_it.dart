@@ -273,6 +273,21 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get settingsAuthTitle => 'Basic Authentication';
+
+  @override
+  String get settingsAuthUsername => 'Username';
+
+  @override
+  String get settingsAuthPassword => 'Password';
+
+  @override
+  String get tooltipSetAuth => 'Set authentication credentials';
+
+  @override
+  String get settingsAuthHeaderTitle => 'Configure Basic Auth';
+
+  @override
   String get settingsSystemMessage => 'Messaggio di sistema';
 
   @override

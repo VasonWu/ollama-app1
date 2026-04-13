@@ -272,6 +272,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsAuthTitle => '基本身份验证';
+
+  @override
+  String get settingsAuthUsername => '用户名';
+
+  @override
+  String get settingsAuthPassword => '密码';
+
+  @override
+  String get tooltipSetAuth => '设置身份验证凭据';
+
+  @override
+  String get settingsAuthHeaderTitle => '配置基本认证';
+
+  @override
   String get settingsSystemMessage => '系统信息';
 
   @override
